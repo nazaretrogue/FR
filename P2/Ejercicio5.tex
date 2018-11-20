@@ -1,0 +1,181 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}	%Idioma
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx} 	%Añadir imágenes
+\usepackage{geometry}	%Ajustar márgenes
+\usepackage[export]{adjustbox}[2011/08/13]
+\usepackage{float}
+\restylefloat{table}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titling}
+\graphicspath{{/home/nazaret/Escritorio/LaTEX}}
+%\usepackage{minted}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{multicol}
+\usepackage{array}
+\selectlanguage{english}
+
+%Opciones de encabezado y pie de página:
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{}
+\rhead{}
+\lfoot{Fundamentos de Redes}
+\cfoot{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+%Opciones de fuente:
+\usepackage[utf8]{inputenc}
+\usepackage[default]{sourcesanspro}
+\usepackage{sourcecodepro}
+\usepackage[T1]{fontenc}
+
+\setlength{\parindent}{15pt}
+\setlength{\headheight}{15pt}
+\setlength{\voffset}{10mm}
+
+% Custom colors
+\usepackage{color}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+
+\usepackage{listings}
+
+% Diagrama de estados
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows}
+
+% Tablas con saltos de línea en las celdas
+\usepackage{fourier}
+\usepackage{makecell}
+
+\renewcommand\theadalign{bc}
+\renewcommand\theadfont{\bfseries}
+\renewcommand\theadgape{\Gape[4pt]}
+\renewcommand\cellgape{\Gape[4pt]}
+
+\begin{document}
+\begin{titlepage}
+
+\begin{minipage}{\textwidth}
+
+\centering
+\includegraphics[width=0.5\textwidth]{/home/nazaret/Escritorio/LaTEX/logo.png}\\
+
+\textsc{\Large Fundamentos de Redes\\[0.2cm]}
+\textsc{GRADO EN INGENIERÍA INFORMÁTICA}\\[1cm]
+
+{\Huge\bfseries Práctica 2\\}
+\noindent\rule[-1ex]{\textwidth}{3pt}\\[3.5ex]
+{\large\bfseries Ejercicio 5}
+\end{minipage}
+
+\vspace{1.5cm}
+\begin{minipage}{\textwidth}
+\centering
+
+\textbf{Autores}\\ {Javier Gálvez Obispo\\Nazaret Román Guerrero}\\[2.5ex]
+\includegraphics[width=0.3\textwidth]{/home/nazaret/Escritorio/LaTEX/etsiit.jpeg}\\[0.1cm]
+\vspace{1cm}
+\textsc{Escuela Técnica Superior de Ingenierías Informática y de Telecomunicación}\\
+\vspace{1cm}
+\textsc{Curso 2018-2019}
+\end{minipage}
+\end{titlepage}
+
+\pagenumbering{gobble}
+\pagenumbering{arabic}
+\tableofcontents
+\thispagestyle{empty}
+
+\newpage
+
+\section{Descripción de la aplicación, funcionalidad y actores que intervienen}
+
+La aplicación diseñada sirve para jugar al clásico juego \textit{Batalla Naval}, donde dos jugadores intentan hundir la flota del adversario y alzarse victoriosos.\\
+
+En esta aplicación, el jugador humano se enfrenta al servidor, utilizando el protocolo \textsc{\textbf{TCP}}, que es usado para iniciar la comunicación entre cliente y servidor.\\
+
+Los actores son los siguientes:\\
+	\begin{itemize}
+	\item El servidor, que es el oponente a derrotar por el cliente. Se encarga de establecer una conexión cuando le llega la petición del cliente.
+	\item El cliente, el jugador humano que inicia la comunicación con el servidor y que intentará derrotar al servidor.
+	\item El procesador, que es el que lleva a cabo toda la funcionalidad, especialmente la del servidor (ya que realmente éste solo se encarga de llevar a cabo la comunicación y delega todo el juego al procesador).
+	\end{itemize}
+
+\section{Diagrama de estados del servidor}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=5cm,scale = 1,transform shape]
+	\node[state] (start) {$start$}; 
+	\node[state] (play) [right=of start] {$play$}; 
+	\node[state] (end) [below=of start] {$end$};
+	
+	\draw 	(start) edge[above] node{(conex/pos y valor)} (play)
+			(start) edge[left] node{(me rindo/has perdido)} (end)
+			(play) edge[right] node{(me rindo/has perdido), (*/has ganado), (*/has perdido)} (end)
+			(play) edge[loop right] node{(pos y valor/pos y valor)} (play);
+\end{tikzpicture}
+\end{figure}
+
+\newpage
+
+\section{Mensajes que intervienen}
+
+\begin{itemize}
+	\item Mensajes envíados por el cliente
+	\begin{figure}[H]
+	\centering
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\thead{Código} & \thead{Cuerpo} & \thead{Descripción}\\ \hline
+		100 & \textsc{\makecell{nueva posicion +\\valor posicion cliente +\\ anterior posicion}} & \makecell{Este mensaje lo envía el cliente al servidor para\\indicar la nueva posición que el cliente quiere\\saber y la respuesta a la posición que el\\servidor le ha enviado anteriormente} \\ \hline
+	\end{tabular}
+	\end{figure}
+	
+	\item Mensajes envíados por el servidor
+	\begin{figure}[H]
+	\centering
+	\begin{tabular}{|l|l|l|}
+		\hline
+		\thead{Código} & \thead{Cuerpo} & \thead{Descripción}\\ \hline
+		200 & \textsc{\makecell{nueva posicion +\\valor posicion servidor +\\ anterior posicion}} & \makecell{Este mensaje lo envía el servidor al cliente para\\indicar la nueva posición que el servidor quiere\\saber (es aleatoria) y la respuesta a la posición\\que el cliente le envía en el turno anterior} \\ \hline
+	\end{tabular}
+	\end{figure}
+\end{itemize}
+
+\section{Evaluación de la aplicación}
+
+\begin{itemize}
+	\item Inicio del juego: se muestran los tableros del jugador (el terminal izquierdo, donde se muestra a la izquierda el tablero donde se apunta qué posiciones ha preguntado el servidor, y a la derecha el tablero del jugador) y el servidor (el terminal de la derecha).
+	
+	\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.21]{/home/nazaret/Escritorio/1.png}
+	\end{figure}
+	
+	\item Partida: a medida que el juego avanza, los tableros van rellenándose. Cuando el servidor toca (o hunde) un barco, la letra \textit{b} es sustituida por una \textit{x}. Las casillas que han sido visitadas pero en las que solo había agua se coloca una almohadilla.\\
+	
+	En el otro tablero se rellena con \textit{a} en el caso de que en el tablero del servidor hubiera agua, y con \textit{b} si hubiera un barco. 
+
+	\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.21]{/home/nazaret/Escritorio/2.png}
+	\end{figure}
+
+	\item El cliente se rinde: cuando el jugador quiera rendirse, solo ha de introducir la letra \textit{\textbf{r}}, de forma que la partida finaliza, tal y como se observa en la siguiente imagen:
+	
+	\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.21]{/home/nazaret/Escritorio/3.png}
+	\end{figure}
+\end{itemize}
+\end{document}
